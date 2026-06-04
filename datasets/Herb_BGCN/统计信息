@@ -1,0 +1,50 @@
+>>>>>>>>>>B-I statistics>>>>>>>>>>
+Average interactions 7.755781650543213
+Non-zero rows 1.0
+Non-zero columns 1.0
+Matrix density 0.009952732450346067
+finish loading assist data
+>>>>>>>>>>U-I statistics>>>>>>>>>>
+Average interactions 837.6555786132812
+Non-zero rows 1.0
+Non-zero columns 1.0
+Matrix density 0.13684521174561015
+>>>>>>>>>>US-I statistics>>>>>>>>>>
+Average interactions 40.44912338256836
+Non-zero rows 1.0
+Non-zero columns 1.0
+Matrix density 0.021380850865543675
+finish loading item data
+>>>>>>>>>>U-B statistics in train>>>>>>>>>>
+Average interactions 92.85832977294922
+Non-zero rows 1.0
+Non-zero columns 0.831469178370196
+Matrix density 0.003841140358254142
+>>>>>>>>>>US-BS statistics in train>>>>>>>>>>
+Average interactions 4.770833492279053
+Non-zero rows 0.8743421052631579
+Non-zero columns 0.831469178370196
+Matrix density 0.00020060690157822444
+finish loading bundle train data
+>>>>>>>>>>U-B statistics in valid>>>>>>>>>>
+Average interactions 4.969444274902344
+Non-zero rows 0.5527777777777778
+Non-zero columns 0.04827180220334707
+Matrix density 0.00020884142068230876
+>>>>>>>>>>US-BS statistics in valid>>>>>>>>>>
+Average interactions 0.25482454895973206
+Non-zero rows 0.10592105263157894
+Non-zero columns 0.04827180220334707
+Matrix density 1.0715018139917113e-05
+finish loading bundle test data
+>>>>>>>>>>U-B statistics in test>>>>>>>>>>
+Average interactions 14.713889122009277
+Non-zero rows 0.7055555555555556
+Non-zero columns 0.1404843999663611
+Matrix density 0.0006167129201356768
+>>>>>>>>>>US-BS statistics in test>>>>>>>>>>
+Average interactions 0.7550438642501831
+Non-zero rows 0.22872807017543859
+Non-zero columns 0.1404843999663611
+Matrix density 3.174854342145837e-05
+finish loading bundle test data
