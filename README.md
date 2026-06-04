@@ -1,9 +1,8 @@
-# KCCL
-KCCL: Knowledge-enhanced Cross-view Contrastive Learning Model for Herb Recommendation
+# KCCL: Knowledge-enhanced Cross-view Contrastive Learning Model for Herb Recommendation
 
 KCCL integrates three modules: knowledge enhancement, cross-view syndrome differentiation and treatment (SDT) modeling, and herb recommendation, to automatically generate clinically meaningful herb combinations from symptom inputs and provide prescription references for TCM clinical decision-making. As the first herb recommendation framework to explicitly integrate and align local and global SDT views, KCCL is further supported by clinical case studies and network pharmacology analysis.
 
-![graph abstract.jpg](graph abstract.jpg)
+![https://github.com/ywjawmw/KCCL/graph abstract.jpg](graph abstract.jpg)
 
 ## Dataset
 
