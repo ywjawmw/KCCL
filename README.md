@@ -166,3 +166,17 @@ vector_<LLM_name>_symptom_merge_summary.pkl
 vector_<LLM_name>_herb_merge_summary.pkl
 ```
 
+## Citation
+
+If you use this repository in your research, please cite:
+
+```bibtex
+@misc{yue2026kccl,
+  title        = {KCCL: Knowledge-enhanced Cross-view Contrastive Learning Model for Herb Recommendation},
+  author       = {Yue, Wenjing and Lu, Jinyuan and Liu, Anrong and Gu, Wenjing and Chen, Hongyu and Guo, Chengyang and Jia, Wentao and Wang, Xiaoling and Tiana, Saisai and Zhang, Weidong},
+  year         = {2026},
+  howpublished = {\url{https://github.com/your-username/KCCL}},
+  note         = {GitHub repository}
+}
+```
+
