@@ -175,7 +175,7 @@ If you use this repository in your research, please cite:
   title        = {KCCL: Knowledge-enhanced Cross-view Contrastive Learning Model for Herb Recommendation},
   author       = {Yue, Wenjing and Lu, Jinyuan and Liu, Anrong and Gu, Wenjing and Chen, Hongyu and Guo, Chengyang and Jia, Wentao and Wang, Xiaoling and Tiana, Saisai and Zhang, Weidong},
   year         = {2026},
-  howpublished = {\url{https://github.com/your-username/KCCL}},
+  howpublished = {https://github.com/ywjawmw/KCCL},
   note         = {GitHub repository}
 }
 ```
