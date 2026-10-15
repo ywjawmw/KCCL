@@ -2,7 +2,7 @@
 
 KCCL integrates three modules: knowledge enhancement, cross-view syndrome differentiation and treatment (SDT) modeling, and herb recommendation, to automatically generate clinically meaningful herb combinations from symptom inputs and provide prescription references for TCM clinical decision-making. As the first herb recommendation framework to explicitly integrate and align local and global SDT views, KCCL is further supported by clinical case studies and network pharmacology analysis.
 
-![graph abstract.jpeg](graph abstract.jpg)
+![graph abstract.jpeg](graph abstract.jpeg)
 
 ## Dataset
 
@@ -14,7 +14,7 @@ First, run `process_data.py` to split `all_data.txt` and generate the dataset fi
 python datasets/Herb_BGCN/process_data.py
 ```
 
-The 26,360 records are randomly divided into 21,755 training, 1,162 validation, and 3,443 test records. No random seed is set. The training split covers all symptoms and herbs in the dataset.
+The 26,360 records are randomly divided into 21,755 training, 1,162 validation, and 3,443 test records.
 
 Then, run `build_graphs.py` to construct the training graphs:
 
@@ -39,7 +39,9 @@ The generated data files include:
 - `valid_id.txt`: a copy of `tune_id.txt`
 - `user_bundle*.txt`: symptom-therapeutic methods interaction data
 - `user_item_train.txt`: symptom-herb interaction data
-- `set_user_bundle*.txt`: syndrome-therapeutic methods interaction data
+- `set_user_bundle_train.txt`: syndrome-therapeutic methods interaction data
+- `set_user_bundle_tune.txt`: validation sample mappings (syndrome ID and reference therapeutic method ID), aligned row by row with `tune_id.txt`, for validation.
+- `set_user_bundle_test.txt`: test sample mappings (syndrome ID and reference therapeutic method ID), aligned row by row with `test_id.txt`, for testing.
 - `bundle_item_train.txt`: therapeutic method-herb affiliation data
 - `us_u_list`: mapping tensor from syndromes to symptoms
 
