@@ -37,7 +37,7 @@ The generated data files include:
 
 - `train_id.txt`, `tune_id.txt`, and `test_id.txt`: training, validation, and test records containing symptom and herb IDs
 - `valid_id.txt`: a copy of `tune_id.txt`
-- `user_bundle*.txt`: symptom-therapeutic methods interaction data
+- `user_bundle_train.txt`: symptom-therapeutic methods interaction data
 - `user_item_train.txt`: symptom-herb interaction data
 - `set_user_bundle_train.txt`: syndrome-therapeutic methods interaction data
 - `set_user_bundle_tune.txt`: validation sample mappings (syndrome ID and reference therapeutic method ID), aligned row by row with `tune_id.txt`, for validation.
