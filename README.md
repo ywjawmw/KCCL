@@ -1,12 +1,30 @@
-# KCCL: Knowledge-enhanced Cross-view Contrastive Learning Model for Herb Recommendation
+# KCCL
 
 KCCL integrates three modules: knowledge enhancement, cross-view syndrome differentiation and treatment (SDT) modeling, and herb recommendation, to automatically generate clinically meaningful herb combinations from symptom inputs and provide prescription references for TCM clinical decision-making. As the first herb recommendation framework to explicitly integrate and align local and global SDT views, KCCL is further supported by clinical case studies and network pharmacology analysis.
 
-![https://github.com/ywjawmw/KCCL/graph abstract.jpg](https://github.com/ywjawmw/KCCL/blob/main/graph%20abstract.jpg)
+![graph abstract.jpeg](graph abstract.jpg)
 
 ## Dataset
 
-The default dataset is `Herb_BGCN`. The data size file reports:
+The default dataset is `Herb_BGCN` (The public TCM dataset). Run the following commands from the repository root.
+
+First, run `process_data.py` to split `all_data.txt` and generate the dataset files:
+
+```bash
+python datasets/Herb_BGCN/process_data.py
+```
+
+The 26,360 records are randomly divided into 21,755 training, 1,162 validation, and 3,443 test records. No random seed is set. The training split covers all symptoms and herbs in the dataset.
+
+Then, run `build_graphs.py` to construct the training graphs:
+
+```bash
+python datasets/Herb_BGCN/build_graphs.py
+```
+
+This generates `user_item_train.txt` and `bundle_item_train.txt` from the training split. After these two steps, the files required for training are available in `datasets/Herb_BGCN/`.
+
+The data size file `Herb_BGCN_data_size.txt` reports:
 
 ```text
 num_symptoms = 360
@@ -15,12 +33,14 @@ num_herbs = 753
 num_syndromes = 4560
 ```
 
-The main data files are located in `datasets/Herb_BGCN/`:
+The generated data files include:
 
-- `user_item*.txt`: symptom-herb interaction data
-- `user_bundle*.txt`: symptom-prescription interaction data
+- `train_id.txt`, `tune_id.txt`, and `test_id.txt`: training, validation, and test records containing symptom and herb IDs
+- `valid_id.txt`: a copy of `tune_id.txt`
+- `user_bundle*.txt`: symptom-therapeutic methods interaction data
+- `user_item_train.txt`: symptom-herb interaction data
 - `set_user_bundle*.txt`: syndrome-therapeutic methods interaction data
-- `bundle_item.txt`: therapeutic method-herb affiliation data
+- `bundle_item_train.txt`: therapeutic method-herb affiliation data
 - `us_u_list`: mapping tensor from syndromes to symptoms
 
 LLM-enhanced representations are stored in `datasets/GPT/Herb_BGCN/`:
@@ -29,6 +49,15 @@ LLM-enhanced representations are stored in `datasets/GPT/Herb_BGCN/`:
 - `vector_gpt-3.5-turbo_herb_merge_summary.pkl`
 
 These vectors are loaded automatically by `models/KCCL_syn_P_LLM_merge.py`.
+
+For `LungCancer`, only a **100-record demo** is provided in `datasets/LungCancer/all_data.txt`. Run the corresponding scripts in the same order to generate the files required for training:
+
+```bash
+python datasets/LungCancer/process_data.py
+python datasets/LungCancer/build_graphs.py
+```
+
+The demo is divided into 80 training, 10 validation, and 10 test records, with all demo symptoms and herbs covered by the training split. These scripts generate `LungCancer_data_size.txt`, the split and interaction files described above, `us_u_list`, and the two training graph files in `datasets/LungCancer/`. The corresponding LLM-enhanced representations are stored in `datasets/GPT/LungCancer/`.
 
 ## Environment
 
@@ -77,7 +106,7 @@ $env:WANDB_MODE="offline"
 Run KCCL on the default `Herb_BGCN` dataset:
 
 ```bash
-python train_tcm_syn_P_LLM_merge.py --gpu 0 --dataset Herb_BGCN --model KCCL --config "CONFIG_reg:7e-3-pair-MD-best"
+python train.py --gpu 0 --dataset Herb_BGCN --model KCCL --config "CONFIG_reg:7e-3-pair-MD-best"
 ```
 
 Main configurable parameters are defined in `config_weight.py`, including:
@@ -104,13 +133,13 @@ To evaluate a saved model, make sure `pretrain` is set to `1` in `config_weight_
 Then run:
 
 ```bash
-python test_tcm_syn_P_LLM_merge.py --gpu 0 --dataset Herb_BGCN --model KCCL --config "CONFIG_reg:7e-3-pair-MD-best"
+python test.py --gpu 0 --dataset Herb_BGCN --model KCCL --config "CONFIG_reg:best-fx"
 ```
 
 Evaluation results are saved to:
 
 ```text
-visual/SYN_P_merge/result/Herb_BGCN/KCCL/result_test-CONFIG_reg:7e-3-pair-MD-best-LLM_merge-seed.xlsx
+visual/SYN_P_merge/result/Herb_BGCN/KCCL/result_test-CONFIG_reg:best-fx-seed.xlsx
 ```
 
 ## Metrics
@@ -128,7 +157,7 @@ The default evaluation cutoffs are:
 K = 5, 20
 ```
 
-## Reproducibility Notes
+## Default parameter setting on the TCM dataset
 
 - Default training batch size: `1024`
 - Default LLM representation: `gpt-3.5-turbo`
@@ -175,8 +204,7 @@ If you use this repository in your research, please cite:
   title        = {KCCL: Knowledge-enhanced Cross-view Contrastive Learning Model for Herb Recommendation},
   author       = {Yue, Wenjing and Lu, Jinyuan and Liu, Anrong and Gu, Wenjing and Chen, Hongyu and Guo, Chengyang and Jia, Wentao and Wang, Xiaoling and Tiana, Saisai and Zhang, Weidong},
   year         = {2026},
-  howpublished = {https://github.com/ywjawmw/KCCL},
+  howpublished = {\url{https://github.com/your-username/KCCL}},
   note         = {GitHub repository}
 }
 ```
-
