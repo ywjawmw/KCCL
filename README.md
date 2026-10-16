@@ -10,7 +10,7 @@ We provide a demo version of the `TCM` dataset to illustrate the data format and
 
 Run the following commands from the repository root.
 
-First, run `process_data.py` to split `all_data.txt` and generate the traing, validation, and testing dataset files:
+First, run `process_data.py` to split `all_data.txt` and generate the traing, validation, and test dataset files:
 
 ```bash
 python datasets/TCM/process_data.py
@@ -59,7 +59,7 @@ The code was developed with PyTorch, DGL, PyTorch Geometric, SciPy, NumPy, Panda
 A typical setup is:
 
 ```bash
-conda create -n kccl python=3.7 -kccl
+conda create -n kccl python=3.7
 conda activate kccl
 pip install -r requirements.txt
 ```
@@ -81,7 +81,7 @@ pip install dgl-cu111==0.6.1 torch-geometric==2.0.4
 Run KCCL on the default `TCM` dataset:
 
 ```bash
-python train.py --gpu 0 --dataset TCM --model KCCL --config "CONFIG_reg:best-fx"
+python train.py --gpu 0 --model KCCL --config "CONFIG_reg:best-fx"
 ```
 
 Main configurable parameters are defined in `config_weight.py`, including:
@@ -119,7 +119,7 @@ visual/SYN_P_merge/result/TCM/KCCL/result_test-CONFIG_reg:best-fx-seed.xlsx
 
 ## Metrics
 
-The reported metrics are:
+The reported multi-reference best-matching evaluation metrics are:
 
 - `Recall@K`
 - `Precision@K`
@@ -131,21 +131,6 @@ The default evaluation cutoffs are:
 ```text
 K = 5, 20
 ```
-
-## Default parameter setting on the full TCM dataset
-
-- Default training batch size: `1024`
-- Default LLM representation: `gpt-3.5-turbo`
-- Default augmentation: `MD`
-- Default item-level dropout ratio: `0.2`
-- Default bundle-level dropout ratios: `0.15`
-- Default bundle aggregation dropout ratios: `0.2`
-- Default embedding size: `64`
-- Default graph propagation layer: `1`
-- Default learning rate candidates: `2e-4`
-- Default L2 regularization weight: `7.0e-3`
-- Default contrastive temperature: `0.15`
-- Default number of training epochs: `2000`
 
 CUDA nondeterminism may lead to small variations across hardware and driver versions.
 
