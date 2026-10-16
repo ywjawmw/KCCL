@@ -1,6 +1,6 @@
 # KCCL
 
-KCCL integrates three modules: knowledge enhancement, cross-view syndrome differentiation and treatment (SDT) modeling, and herb recommendation, to automatically generate clinically meaningful herb combinations from symptom inputs and provide prescription references for TCM clinical decision-making. As the first herb recommendation framework to explicitly integrate and align local and global SDT views, KCCL is further supported by clinical case studies and network pharmacology analysis.
+KCCL integrates three modules: knowledge enhancement, cross-view syndrome differentiation and treatment (SDT) modeling, and herb recommendation, to automatically generate meaningful herb combinations from symptom inputs and provide potential prescription references for TCM clinical decision-making. As the first herb recommendation framework to explicitly integrate and align local and global SDT views, KCCL is further supported by clinical case studies and network pharmacology analysis.
 
 ![graph abstract.jpeg](https://github.com/ywjawmw/KCCL/blob/main/graph_abstract.jpeg)
 
@@ -132,7 +132,7 @@ The default evaluation cutoffs are:
 K = 5, 20
 ```
 
-## Default parameter setting on the TCM dataset
+## Default parameter setting on the full TCM dataset
 
 - Default training batch size: `1024`
 - Default LLM representation: `gpt-3.5-turbo`
