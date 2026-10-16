@@ -6,7 +6,7 @@ KCCL integrates three modules: knowledge enhancement, cross-view syndrome differ
 
 ## Dataset
 
-The `TCM` dataset provided in this repository is a demo dataset intended to illustrate the data format and demonstrate the KCCL training and evaluation workflow. 
+We provide a demo version of the 'TCM' dataset to illustrate the data format and facilitate the execution of the KCCL training and evaluation workflow.
 
 Run the following commands from the repository root.
 
@@ -177,9 +177,9 @@ If you use this repository in your research, please cite:
 ```bibtex
 @misc{yue2026kccl,
   title        = {KCCL: Knowledge-enhanced Cross-view Contrastive Learning Model for Herb Recommendation},
-  author       = {Yue, Wenjing and Lu, Jinyuan and Liu, Anrong and Gu, Wenjing and Chen, Hongyu and Guo, Chengyang and Jia, Wentao and Wang, Xiaoling and Tiana, Saisai and Zhang, Weidong},
+  author       = {Yue, Wenjing and Lu, Jinyuan and Liu, Anrong and Gu, Wenjing and Chen, Hongyu and Guo, Chengyang and Jia, Wentao and Wang, Xiaoling and Tian, Saisai and Zhang, Weidong},
   year         = {2026},
-  howpublished = {\url{https://github.com/your-username/KCCL}},
+  howpublished = {\url{https://github.com/ywjawmw/KCCL}},
   note         = {GitHub repository}
 }
 ```
