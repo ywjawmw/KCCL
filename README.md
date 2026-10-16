@@ -114,7 +114,7 @@ python test.py --gpu 0 --dataset TCM --model KCCL --config "CONFIG_reg:best-fx"
 Evaluation results are saved to:
 
 ```text
-visual/SYN_P_merge/result/TCM/KCCL/result_test-CONFIG_reg:best-fx-seed.xlsx
+visual/SYN_P_merge/result/TCM/KCCL/result_test-CONFIG_reg-best-fx-seed.xlsx
 ```
 
 ## Metrics
