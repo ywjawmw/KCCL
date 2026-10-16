@@ -85,24 +85,6 @@ For graph-related packages, install CUDA-compatible builds of:
 pip install dgl-cu111==0.6.1 torch-geometric==2.0.4
 ```
 
-If you do not want to upload logs to Weights & Biases, run:
-
-```bash
-wandb offline
-```
-
-or set:
-
-```bash
-export WANDB_MODE=offline
-```
-
-On Windows PowerShell:
-
-```powershell
-$env:WANDB_MODE="offline"
-```
-
 ## Training
 
 Run KCCL on the default `Herb_BGCN` dataset:
