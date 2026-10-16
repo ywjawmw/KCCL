@@ -31,7 +31,7 @@ def get_cmd():
     parser = argparse.ArgumentParser()
     # experimental settings
     parser.add_argument("-g", "--gpu", default="0", type=str, help="which gpu to use")
-    parser.add_argument("-d", "--dataset", default="Herb_BGCN", type=str, help="which dataset to use, options: NetEase, Youshu, iFashion")
+    parser.add_argument("-d", "--dataset", default="TCM", type=str, help="which dataset to use, options: NetEase, Youshu, iFashion")
     parser.add_argument("-m", "--model", default="KCCL", type=str, help="which model to use, options: KCCL")
     parser.add_argument("-i", "--info", default="", type=str, help="any auxilary info that will be appended to the log file name")
     parser.add_argument("-c", "--config", default="CONFIG_reg:best-fx", type=str,
