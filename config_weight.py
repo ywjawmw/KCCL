@@ -41,7 +41,7 @@ CONFIG = {
             "mlp": 1,
             'mlp_layer_size': [64],
             'mess_dropout_k': [0.0, 0.0],
-            'set_K': [5, 10, 15, 20],
+            'set_K': [5, 20],
             'pretrain': 0,
             'save_flag': 1,
             'seed': [3407, 1729],
