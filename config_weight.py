@@ -43,7 +43,7 @@ CONFIG = {
             'mess_dropout_k': [0.0, 0.0],
             'set_K': [5, 10, 15, 20],
             'pretrain': 0,
-            'save_flag': 0,
+            'save_flag': 1,
             'seed': [3407, 1729],
             'LLM_name': ["gpt-3.5-turbo"],
             'save_tail': 'tc-MD-4-best_final'
