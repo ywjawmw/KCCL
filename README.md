@@ -6,25 +6,25 @@ KCCL integrates three modules: knowledge enhancement, cross-view syndrome differ
 
 ## Dataset
 
-The default dataset is `Herb_BGCN` (The public TCM dataset). Run the following commands from the repository root.
+The `TCM` dataset provided in this repository is a demo dataset intended to illustrate the data format and demonstrate the KCCL training and evaluation workflow. 
 
-First, run `process_data.py` to split `all_data.txt` and generate the dataset files:
+Run the following commands from the repository root.
+
+First, run `process_data.py` to split `all_data.txt` and generate the traing, validation, and testing dataset files:
 
 ```bash
-python datasets/Herb_BGCN/process_data.py
+python datasets/TCM/process_data.py
 ```
-
-The 26,360 records are randomly divided into 21,755 training, 1,162 validation, and 3,443 test records.
 
 Then, run `build_graphs.py` to construct the training graphs:
 
 ```bash
-python datasets/Herb_BGCN/build_graphs.py
+python datasets/TCM/build_graphs.py
 ```
 
-This generates `user_item_train.txt` and `bundle_item_train.txt` from the training split. After these two steps, the files required for training are available in `datasets/Herb_BGCN/`.
+This generates `user_item_train.txt` and `bundle_item_train.txt` from the training split. After these two steps, the files required for training are available in `datasets/TCM/`.
 
-The data size file `Herb_BGCN_data_size.txt` reports:
+The data size file `TCM_data_size.txt` reports:
 
 ```text
 num_symptoms = 360
@@ -45,7 +45,7 @@ The generated data files include:
 - `bundle_item_train.txt`: therapeutic method-herb affiliation data
 - `us_u_list`: mapping tensor from syndromes to symptoms
 
-LLM-enhanced representations are stored in `datasets/GPT/Herb_BGCN/`:
+LLM-enhanced representations are stored in `datasets/GPT/TCM/`:
 
 - `vector_gpt-3.5-turbo_symptom_merge_summary.pkl`
 - `vector_gpt-3.5-turbo_herb_merge_summary.pkl`
@@ -87,10 +87,10 @@ pip install dgl-cu111==0.6.1 torch-geometric==2.0.4
 
 ## Training
 
-Run KCCL on the default `Herb_BGCN` dataset:
+Run KCCL on the default `TCM` dataset:
 
 ```bash
-python train.py --gpu 0 --dataset Herb_BGCN --model KCCL --config "CONFIG_reg:best-fx"
+python train.py --gpu 0 --dataset TCM --model KCCL --config "CONFIG_reg:best-fx"
 ```
 
 Main configurable parameters are defined in `config_weight.py`, including:
@@ -117,13 +117,13 @@ To evaluate a saved model, make sure `pretrain` is set to `1` in `config_weight_
 Then run:
 
 ```bash
-python test.py --gpu 0 --dataset Herb_BGCN --model KCCL --config "CONFIG_reg:best-fx"
+python test.py --gpu 0 --dataset TCM --model KCCL --config "CONFIG_reg:best-fx"
 ```
 
 Evaluation results are saved to:
 
 ```text
-visual/SYN_P_merge/result/Herb_BGCN/KCCL/result_test-CONFIG_reg:best-fx-seed.xlsx
+visual/SYN_P_merge/result/TCM/KCCL/result_test-CONFIG_reg:best-fx-seed.xlsx
 ```
 
 ## Metrics
@@ -163,14 +163,14 @@ CUDA nondeterminism may lead to small variations across hardware and driver vers
 The repository includes scripts under:
 
 ```text
-datasets/GPT/Herb_BGCN/get_vector/
+datasets/GPT/TCM/get_vector/
 ```
 
 The `get_vector` folder contains the LLM-generated corpus files for symptoms and herbs, including merged textual descriptions and the generated semantic vector files used by KCCL.
 
 The `response` folder contains the code for using LLMs to construct pairwise text, generate descriptive corpora, and produce embeddings for symptoms and herbs.
 
-The released pickle files in `datasets/GPT/Herb_BGCN/` are sufficient for running the current KCCL training and evaluation scripts.
+The released pickle files in `datasets/GPT/TCM/` are sufficient for running the current KCCL training and evaluation scripts.
 
 If regenerating embeddings, update `LLM_name` in the configuration so that the generated files follow this naming pattern:
 
