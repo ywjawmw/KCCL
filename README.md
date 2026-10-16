@@ -90,7 +90,7 @@ pip install dgl-cu111==0.6.1 torch-geometric==2.0.4
 Run KCCL on the default `Herb_BGCN` dataset:
 
 ```bash
-python train.py --gpu 0 --dataset Herb_BGCN --model KCCL --config "CONFIG_reg:7e-3-pair-MD-best"
+python train.py --gpu 0 --dataset Herb_BGCN --model KCCL --config "CONFIG_reg:best-fx"
 ```
 
 Main configurable parameters are defined in `config_weight.py`, including:
