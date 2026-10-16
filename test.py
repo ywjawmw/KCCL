@@ -1,0 +1,341 @@
+#!/usr/bin/env python3
+# -*- coding: utf-8 -*-
+
+import os
+# import yaml
+import json
+import argparse
+from tqdm import tqdm
+from itertools import product
+from datetime import datetime
+# from torch.utils.tensorboard import SummaryWriter
+from tensorboardX import SummaryWriter
+import torch
+import torch.optim as optim
+from utility import Datasets
+import pickle
+import numpy as np
+from helper import *
+import sys
+from config_weight_test import CONFIG
+import pandas as pd
+import random
+import time
+
+
+def get_cmd():
+    parser = argparse.ArgumentParser()
+    # experimental settings
+    parser.add_argument("-g", "--gpu", default="0", type=str, help="which gpu to use")
+    parser.add_argument("-d", "--dataset", default="TCM", type=str, help="which dataset to use, options: NetEase, Youshu, iFashion")
+    parser.add_argument("-m", "--model", default="KCCL", type=str, help="which model to use, options: KCCL")
+    parser.add_argument("-i", "--info", default="", type=str, help="any auxilary info that will be appended to the log file name")
+    parser.add_argument("-c", "--config", default="CONFIG_reg:best-fx", type=str,
+                        help="any auxilary info that will be appended to the log file name")
+    args = parser.parse_args()
+
+    return args
+
+def load_obj(name):
+    with open(name, 'rb') as f:
+        return pickle.load(f)
+
+
+def load_us_u(conf, dataset, device):
+    us_u_path = os.path.join(
+        conf["data_path"], conf["dataset"], "us_u_list"
+    )
+    us_u = torch.as_tensor(load_obj(us_u_path), dtype=torch.float32)
+
+    if us_u.ndim != 2 or us_u.shape[0] != dataset.num_users_set:
+        raise ValueError(
+            "Invalid us_u shape {} for {} user sets".format(
+                tuple(us_u.shape), dataset.num_users_set
+            )
+        )
+    if us_u.shape[1] < dataset.num_users:
+        raise ValueError(
+            "us_u has {} symptom columns, but the model requires {}".format(
+                us_u.shape[1], dataset.num_users
+            )
+        )
+    if us_u.shape[1] > dataset.num_users:
+        extra_columns = us_u[:, dataset.num_users:]
+        if torch.any(extra_columns != 0).item():
+            raise ValueError(
+                "Cannot remove non-zero extra columns from us_u: {} vs {}"
+                .format(us_u.shape[1], dataset.num_users)
+            )
+        us_u = us_u[:, :dataset.num_users]
+
+    print("load us_u from {}, shape={}".format(us_u_path, tuple(us_u.shape)))
+    return us_u.to(device)
+
+
+def main():
+    # conf = yaml.safe_load(open("./config.yaml"))
+    # server_model_save_path = "/mnt/local/wjyue/CorssCBR/model/visual"
+    server_model_save_path = "./visual/SYN_P_merge"
+    print("load config file done!")
+
+    paras = get_cmd().__dict__
+    dataset_name = paras["dataset"]
+
+    assert paras["model"] in ["KCCL"], "Pls select models from: KCCL"
+
+    # if "_" in dataset_name:
+    #     conf = conf[dataset_name.split("_")[0]]
+    # else:
+    #     conf = conf[dataset_name]
+    CONFIG_name = paras["config"]
+    conf = CONFIG[CONFIG_name]
+    conf["dataset"] = dataset_name
+    conf["model"] = paras["model"]
+    dataset = Datasets(conf)
+
+    conf["gpu"] = paras["gpu"]
+    conf["info"] = paras["info"]
+
+    conf["num_users"] = dataset.num_users
+    conf["num_bundles"] = dataset.num_bundles
+    conf["num_items"] = dataset.num_items
+    conf["num_users_set"] = dataset.num_users_set
+
+    # os.environ['CUDA_VISIBLE_DEVICES'] = conf["gpu"]
+    # os.environ['CUDA_LAUNCH_BLOCKING'] = str(conf["gpu"])
+    device = torch.device("cuda:" + str(conf["gpu"]) if torch.cuda.is_available() else "cpu")
+    conf["device"] = device
+    print(conf)
+    print(torch.cuda.device_count())
+    us_u = load_us_u(conf, dataset, device)
+
+    result_path = f"{server_model_save_path}/result/%s/%s" % (conf["dataset"], conf["model"])
+    file_path = result_path + f"/result_test-{CONFIG_name}-LLM_merge-seed.xlsx".replace(":", "-")
+    if not os.path.isdir(result_path):
+        os.makedirs(result_path)
+    columns = ["Parameter"] + [
+        f"{metric}@{k}"
+        for metric in ("Recall", "Pre", "NDCG", "RMRR")
+        for k in conf["set_K"]
+    ]
+    if not os.path.exists(file_path):
+        # 创建一个DataFrame
+        df = pd.DataFrame(columns=columns)
+        df.to_excel(file_path, index=False)
+    # 读取现有的Excel文件
+    df = pd.read_excel(file_path)
+
+    for lr, l2_reg, item_level_ratio, bundle_level_ratio, bundle_agg_ratio, embedding_size, num_layers, c_lambda, c_temp, LLM_name, seed in \
+            product(conf['lrs'], conf['l2_regs'], conf['item_level_ratios'], conf['bundle_level_ratios'], conf['bundle_agg_ratios'], conf["embedding_sizes"], conf["num_layerss"], conf["c_lambdas"], conf["c_temps"], conf["LLM_name"], conf['seed']):
+        run_path = f"{server_model_save_path}/runs/%s/%s" %(conf["dataset"], conf["model"])
+        np.random.seed(seed)
+        torch.manual_seed(seed)
+        if torch.cuda.is_available():
+            torch.cuda.manual_seed_all(seed)
+        if not os.path.isdir(run_path):
+            os.makedirs(run_path)
+
+        conf["l2_reg"] = l2_reg
+        conf["embedding_size"] = embedding_size
+
+        settings = []
+        if conf["info"] != "":
+            settings += [conf["info"]]
+
+        settings += [conf["aug_type"]]
+        if conf["aug_type"] == "ED":
+            settings += [str(conf["ed_interval"])]
+        if conf["aug_type"] == "OP":
+            assert item_level_ratio == 0 and bundle_level_ratio == 0 and bundle_agg_ratio == 0
+
+        settings += ["Neg_%d" %(conf["neg_num"]), str(conf["batch_size_train"]), str(lr), str(l2_reg), str(embedding_size)]
+
+        conf["item_level_ratio"] = item_level_ratio
+        conf["bundle_level_ratio"] = bundle_level_ratio
+        conf["bundle_agg_ratio"] = bundle_agg_ratio
+        conf["num_layers"] = num_layers
+        settings += [str(item_level_ratio), str(bundle_level_ratio), str(bundle_agg_ratio), str(num_layers)]
+
+        conf["c_lambda"] = c_lambda
+        conf["c_temp"] = c_temp
+        settings += [str(c_lambda), str(c_temp), str(num_layers)]
+        setting = "_".join(settings)
+
+        print("args.pretrain\t", conf['pretrain'])
+        if conf['pretrain'] == 1:
+            print("pretrain==1")
+            weights_save_path = os.path.join(server_model_save_path, conf["dataset"],
+                                             conf['model'], LLM_name,
+                                              f"lr{lr}_reg{l2_reg}_aug{conf['aug_type']}"
+                                              f"_itemdr{item_level_ratio}_nodr{bundle_level_ratio}_noaggdr{bundle_agg_ratio}"
+                                              f"_ctemp-{c_temp}_numlayer-{num_layers}_{conf['save_tail']}_merge-{seed}/")
+            pretrain_path = weights_save_path
+            print('load the pretrained model parameters from: ', pretrain_path)
+            model = torch.load(weights_save_path + 'model.pkl', map_location=lambda storage, loc: storage)
+            if model:
+                print("start to load pretrained model")
+                model = model.to(conf["device"])
+                model.conf['device'] = device
+                print("model after add device:", model)
+                paras_test = f"{LLM_name}_merge-lr{lr}_reg{l2_reg}_ctemp-{c_temp}_aug-{conf['aug_type']}_numlayer-{num_layers}_emb-{str(conf['embedding_sizes'])}_itemdr{item_level_ratio}_nodr{bundle_level_ratio}_noaggdr{bundle_agg_ratio}_{str(seed)}"
+                ret = test(model, conf, dataset, us_u)  # 测试使用集合列表
+                pretrain_ret = "pretrained model \trecall=[%s], precision=[%s], ndcg=[%s], rmrr=[%s]" % \
+                               ('\t'.join(['%.5f' % r for r in ret['recall']]),
+                                '\t'.join(['%.5f' % r for r in ret['precision']]),
+                                '\t'.join(['%.5f' % r for r in ret['ndcg']]),
+                                '\t'.join(['%.5f' % r for r in ret['rmrr']]),
+                                )
+                print(pretrain_ret)
+                print("end:")
+                # 写入文件
+                result_row = [paras_test] + [
+                    round(value, 5)
+                    for metric_values in (ret["recall"], ret["precision"], ret["ndcg"], ret["rmrr"])
+                    for value in metric_values
+                ]
+                new_df = pd.DataFrame([result_row], columns=columns)
+                df = pd.concat([df, new_df], ignore_index=True)
+
+                # 写入Excel文件
+                df.to_excel(file_path, index=False)
+                print(f"New results have been added to {file_path}")
+            else:
+                print('no model, without pretraining.')
+
+        else:
+            print('no pretrain, without pretraining.')
+
+
+def test(model, conf, dataset, us_u):
+    """
+    Args:
+    """
+    Ks = conf["set_K"]
+    result = {'precision': np.zeros(len(Ks)), 'recall': np.zeros(len(Ks)),
+              'ndcg': np.zeros(len(Ks)), 'rmrr': np.zeros(len(Ks))}
+    # test_users = users_to_test
+    bundle_test_data = dataset.bundle_test_data
+    test_us_b_pairs = np.array(bundle_test_data.us_b_pairs, dtype=np.int32)
+    users_to_test, ground_truth_us_b = test_us_b_pairs[:, 0], test_us_b_pairs[:, 1]
+    test_users = torch.tensor(users_to_test, dtype=torch.long).to(conf["device"])  # [TN, ]
+    model.eval()
+    with torch.no_grad():
+        positive_bundles = ground_truth_us_b
+        # 由（512,1）的Tensor转为列表
+        positive_bundles = positive_bundles.tolist()
+        # positive_bundles中第一维的每个值是self.bi_graph中的行号, 通过行号取出值，即正例的item
+        _, _, _, b_i_graph = dataset.graphs
+        # 推理计时覆盖图传播、预测和推荐排序，不包含加载模型和评价指标计算。
+        if conf["device"].type == "cuda":
+            torch.cuda.synchronize(conf["device"])
+        inference_start = time.perf_counter()
+        rs = model.propagate(test=True)
+        rate_batch = model.evaluate_items(rs, test_users, us_u)
+        values, indices_index = torch.sort(rate_batch, dim=1, descending=True)  # [n_test, all_items]
+        if conf["device"].type == "cuda":
+            torch.cuda.synchronize(conf["device"])
+        inference_time = time.perf_counter() - inference_start
+        inference_time_per_sample_ms = inference_time * 1000 / max(len(users_to_test), 1)
+        result["inference_time_seconds"] = inference_time
+        result["inference_time_per_sample_ms"] = inference_time_per_sample_ms
+        print(f"Total inference time (propagation + prediction + sorting): {inference_time:.6f} s")
+        print(f"Average inference time per sample: {inference_time_per_sample_ms:.6f} ms "
+              f"({len(users_to_test)} samples)")
+        print('rate_batch ', rate_batch.shape)
+        item_batch = range(conf["num_items"])
+
+        precision_n = np.zeros(len(Ks))
+        recall_n = np.zeros(len(Ks))
+        ndcg_n = np.zeros(len(Ks))
+        rmrr_n = np.zeros(len(Ks))
+        topN = Ks
+
+        gt_count = 0
+        candidate_count = 0
+        for index in range(len(positive_bundles)):
+            entry = [us_index for us_index, us_id in enumerate(users_to_test) if us_id==users_to_test[index]]
+            # entry = positive_bundles[index]
+            v_list = []
+            for en_i in entry:
+                v = dataset.herbs_id_list_test[en_i] # sym-index's true herb set list
+                v_list.append(v)
+            rating = indices_index[index]
+            candidate_count += len(rating)
+            # rating.sort(key=lambda x: x[1], reverse=True)
+            K_max = topN[len(topN) - 1]
+            for ii in range(len(topN)):
+                top_recall, top_precision, top_ndcg, top_rmrr, top_iou = 0., 0., 0., 0., 0.
+                for v in v_list:  # v:对应的ground truth
+                    r = []
+                    for i in rating[:K_max]:
+                        herb = str(i.item())
+                        if herb in v:
+                            r.append(1)
+                        else:
+                            r.append(0)
+                    number = 0
+                    herb_results = []  # 推荐列表中herb 集合
+                    for i in rating[:topN[ii]]:
+                        herb = str(i.item())
+                        herb_results.append(herb)
+                        if herb in v:
+                            number += 1
+                    # todo: modified MRR to Rank-MRR
+                    mrr_score = 0.
+                    for a_rank in range(len(v)):  # herb 在grand truth中的位置a_rank
+                        if v[a_rank] in herb_results:
+                            a_refer = herb_results.index(v[a_rank])  # herb 在推荐列表中的位置a_refer
+                            mrr_score += 1.0 / (abs(a_refer - a_rank) + 1)
+                    if float(number / topN[ii]) > top_precision:  # 使用precision选择GT
+                        top_precision = float(number / topN[ii])
+                        top_recall = float(number / len(v))
+                        top_ndcg = ndcg_at_k(r, topN[ii])
+                        top_rmrr = mrr_score / len(v)
+                precision_n[ii] = precision_n[ii] + top_precision  # [ii]所有测试数据top k的precision之和
+                recall_n[ii] = recall_n[ii] + top_recall
+                ndcg_n[ii] = ndcg_n[ii] + top_ndcg
+                rmrr_n[ii] = rmrr_n[ii] + top_rmrr
+        print('gt_count ', gt_count)
+        print('candidate_count ', candidate_count)
+        print('ideal candidate count ', len(positive_bundles) * conf["num_items"])
+        for ii in range(len(topN)):
+            result['precision'][ii] = precision_n[ii] / len(positive_bundles)
+            result['recall'][ii] = recall_n[ii] / len(positive_bundles)
+            result['ndcg'][ii] = ndcg_n[ii] / len(positive_bundles)
+            result['rmrr'][ii] = rmrr_n[ii] / len(positive_bundles)
+    return result
+
+def dcg_at_k(r, k, method=1):
+    """Score is discounted cumulative gain (dcg)
+    Relevance is positive real values.  Can use binary
+    as the previous methods.
+    Returns:
+        Discounted cumulative gain
+    """
+    r = np.asfarray(r)[:k]
+    if r.size:
+        if method == 0:
+            return r[0] + np.sum(r[1:] / np.log2(np.arange(2, r.size + 1)))
+        elif method == 1:
+            return np.sum(r / np.log2(np.arange(2, r.size + 2)))
+        else:
+            raise ValueError('method must be 0 or 1.')
+    return 0.
+
+
+def ndcg_at_k(r, k, method=1):
+    """Score is normalized discounted cumulative gain (ndcg)
+    Relevance is positive real values.  Can use binary
+    as the previous methods.
+    Returns:
+        Normalized discounted cumulative gain
+    """
+    # dcg_max = dcg_at_k(np.ones_like(r), k, method)
+    dcg_max = dcg_at_k(sorted(r, reverse=True), k, method)
+    if not dcg_max:
+        return 0.
+    return dcg_at_k(r, k, method) / dcg_max
+
+
+if __name__ == "__main__":
+    main()
