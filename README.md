@@ -24,15 +24,6 @@ python datasets/TCM/build_graphs.py
 
 This generates `user_item_train.txt` and `bundle_item_train.txt` from the training split. After these two steps, the files required for training are available in `datasets/TCM/`.
 
-The data size file `TCM_data_size.txt` reports:
-
-```text
-num_symptoms = 360
-num_therapeutic methods = 23782
-num_herbs = 753
-num_syndromes = 4560
-```
-
 The generated data files include:
 
 - `train_id.txt`, `tune_id.txt`, and `test_id.txt`: training, validation, and test records containing symptom and herb IDs
