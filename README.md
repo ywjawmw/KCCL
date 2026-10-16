@@ -6,7 +6,7 @@ KCCL integrates three modules: knowledge enhancement, cross-view syndrome differ
 
 ## Dataset
 
-We provide a demo version of the 'TCM' dataset to illustrate the data format and facilitate the execution of the KCCL training and evaluation workflow.
+We provide a demo version of the `TCM` dataset to illustrate the data format and facilitate the execution of the KCCL training and evaluation workflow.
 
 Run the following commands from the repository root.
 
