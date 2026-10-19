@@ -14,7 +14,7 @@ SPLIT_RATIO = (82.53035, 4.40819, 13.06146)  # train / valid / test (%)
 
 def read_records():
     records = []
-    for line in (BASE_DIR / 'all_data.txt').read_text(encoding='utf-8-sig').splitlines():
+    for line in (BASE_DIR / 'demo.txt').read_text(encoding='utf-8-sig').splitlines():
         if line.strip():
             symptom_text, herb_text = line.strip().split('\t')
             records.append((
